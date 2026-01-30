@@ -3,8 +3,16 @@ import subprocess
 import tempfile
 import os
 import json
+import shutil
 
 app = FastAPI(title="Agent Runtime", version="0.1")
+
+# ✅ FAIL FAST if ffprobe is missing
+if not shutil.which("ffprobe"):
+    raise RuntimeError("ffprobe (FFmpeg) not found in environment")
+    
+if not shutil.which("ffmpeg"):
+    raise RuntimeError("ffmpeg not found in environment")
 
 @app.get("/")
 def root():
@@ -12,7 +20,6 @@ def root():
 
 @app.post("/media/metadata")
 async def media_metadata(file: UploadFile = File(...)):
-    # Save uploaded file to temp
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
@@ -38,11 +45,3 @@ async def media_metadata(file: UploadFile = File(...)):
 
     finally:
         os.unlink(tmp_path)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000))
-    )
