@@ -1,5 +1,8 @@
 [phases.setup]
 nixPkgs = ["ffmpeg"]
 
-[start]
-cmd = "python main.py"
+[phases.build]
+cmds = []
+
+[phases.start]
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
